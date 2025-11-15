@@ -1,42 +1,476 @@
+/* ===========================
+   RESET BÁSICO
+   =========================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
 #root {
-  max-width: 1280px;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #020617; /* similar a bg-slate-950 */
+  color: #e2e8f0;            /* similar a text-slate-200 */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+/* Quitar subrayado por defecto */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ===========================
+   LAYOUT GENERAL
+   =========================== */
+
+.app-root {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #0f172a 0, #020617 60%);
+  color: #e2e8f0;
+}
+
+/* Contenedor centrado para páginas (Login, Signup, etc.) */
+.page-center {
+  min-height: calc(100vh - 64px); /* resta la navbar aprox */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* Contenedor de página estándar (Home, Profile, etc.) */
+.page {
+  max-width: 960px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 1.5rem 1rem 3rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Títulos de página */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.page-subtitle {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* ===========================
+   NAVBAR
+   =========================== */
+
+.navbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid #1f2937;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
+
+.navbar-left,
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+.navbar-link {
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  color: #cbd5f5;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.navbar-link:hover {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+.navbar-link--active {
+  background-color: #0ea5e9;
+  color: #0b1120;
+}
+
+/* Usuario / logout */
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.navbar-user-email {
+  color: #9ca3af;
+}
+
+/* ===========================
+   CARDS GENERALES
+   =========================== */
 
 .card {
-  padding: 2em;
+  background-color: #020617;
+  border-radius: 1rem;
+  border: 1px solid #1e293b;
+  padding: 1.5rem;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.7);
 }
 
-.read-the-docs {
-  color: #888;
+.card-narrow {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ===========================
+   FORMULARIOS
+   =========================== */
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.form-subtitle {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  color: #e5e7eb;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.6rem;
+  border: 1px solid #1f2937;
+  background-color: #020617;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #6b7280;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 1px #0ea5e9;
+  background-color: #020617;
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-error {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #fb7185; /* rojo suave */
+}
+
+/* ===========================
+   BOTONES
+   =========================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  padding: 0.6rem 1.3rem;
+  transition: background-color 0.15s, transform 0.08s, box-shadow 0.15s;
+}
+
+.btn-primary {
+  background: linear-gradient(to right, #0ea5e9, #22c55e);
+  color: #0b1120;
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.35);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+}
+
+.btn-ghost:hover {
+  background-color: #111827;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Botón “iconito” para like / comment, etc. */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.btn-icon:hover {
+  background-color: #020617;
+  color: #e5e7eb;
+}
+
+/* ===========================
+   LINKS DE TEXTO
+   =========================== */
+
+.text-link {
+  color: #38bdf8;
+  font-size: 0.85rem;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+/* ===========================
+   HOME / FEED / POSTS
+   =========================== */
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feed-empty {
+  margin-top: 2rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Tarjeta de post */
+.post-card {
+  background-color: #020617;
+  border-radius: 1rem;
+  border: 1px solid #1e293b;
+  padding: 1rem 1.25rem;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+
+.post-card:hover {
+  background-color: #020617;
+  border-color: #334155;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.post-author {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.post-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.post-content {
+  font-size: 0.95rem;
+  margin: 0.4rem 0 0.6rem;
+  white-space: pre-wrap;
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+/* ===========================
+   PROFILE
+   =========================== */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0ea5e9, #22c55e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #0b1120;
+  font-size: 1.1rem;
+}
+
+.profile-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.profile-username {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+/* ===========================
+   SEARCH / LISTAS DE USUARIOS
+   =========================== */
+
+.search-bar {
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+  background-color: #020617;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.search-input::placeholder {
+  color: #6b7280;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 1px #0ea5e9;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #111827;
+}
+
+.user-row:last-child {
+  border-bottom: none;
+}
+
+.user-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Botón “Follow / Unfollow” reutiliza .btn-sm */
+.btn-following {
+  background-color: #020617;
+  border: 1px solid #22c55e;
+  color: #bbf7d0;
+}
+
+.btn-following:hover {
+  background-color: #022c22;
+}
+
+/* ===========================
+   PEQUEÑOS DETALLES
+   =========================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background-color: #0f172a;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+}
+
+.badge-pill {
+  border-radius: 999px;
 }

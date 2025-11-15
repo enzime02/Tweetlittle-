@@ -1,35 +1,115 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import NewPost from "./pages/NewPost";
+import Profile from "./pages/Profile";
+import Search from "./pages/Search";
+import MyPosts from "./pages/MyPosts";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+function PrivateRoute({ children }) {
+  const { currentUser, loading } = useAuth();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-950 text-slate-100">
+        Loading...
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    );
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 }
 
-export default App
+function AppRoutes() {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    // El loader global ya se maneja en PrivateRoute,
+    // pero esto cubre las rutas públicas
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-950 text-slate-100">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <Home />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/new"
+        element={
+          <PrivateRoute>
+            <NewPost />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile/:uid"
+        element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/search"
+        element={
+          <PrivateRoute>
+            <Search />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/myposts"
+        element={
+          <PrivateRoute>
+            <MyPosts />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/login"
+        element={currentUser ? <Navigate to="/" replace /> : <Login />}
+      />
+      <Route
+        path="/signup"
+        element={currentUser ? <Navigate to="/" replace /> : <Signup />}
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-slate-950 text-slate-100">
+          <Navbar />
+          <main className="max-w-4xl mx-auto px-4 pt-20 pb-10">
+            <AppRoutes />
+          </main>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
