@@ -17,18 +17,22 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // Crear usuario + documento en "users"
-  async function signup(email, password, displayName) {
+  async function signup(email, password, displayName, handle) {
+    // 1) Crear usuario en Firebase Auth
     const cred = await createUserWithEmailAndPassword(auth, email, password);
 
+    // 2) Actualizar displayName en el perfil de Auth
     if (displayName) {
       await updateProfile(cred.user, { displayName });
     }
 
+    // 3) Crear documento en la colección "users"
     const userDocRef = doc(db, "users", cred.user.uid);
     await setDoc(userDocRef, {
       uid: cred.user.uid,
-      displayName: displayName || email.split("@")[0],
-      handle: "@" + (displayName || email.split("@")[0]).toLowerCase(),
+      email,
+      displayName: displayName,
+      handle: "@" + handle.toLowerCase(),
       bio: "",
       avatarUrl: "",
       createdAt: timestamp(),

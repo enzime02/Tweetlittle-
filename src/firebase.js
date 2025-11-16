@@ -6,7 +6,7 @@ import {
   browserLocalPersistence,
 } from "firebase/auth";
 import {
-  getFirestore,
+  initializeFirestore,
   serverTimestamp,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -25,7 +25,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  useFetchStreams: false,
+});
 export const storage = getStorage(app);
 export const timestamp = serverTimestamp;
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -16,29 +17,61 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  function sanitizeHandle(raw) {
+    return raw
+      .trim()
+      .toLowerCase()
+      .replace(/^@/, "")        // quita @ si el usuario lo pone
+      .replace(/\s+/g, "");     // sin espacios
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
-    if (password !== passwordConfirm) {
-      setError("Passwords do not match.");
+    if (!displayName.trim()) {
+      setError("Please enter a display name.");
       return;
     }
-
     if (!handle.trim()) {
       setError("Please choose a handle.");
       return;
     }
+    if (password !== passwordConfirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    const cleanHandle = sanitizeHandle(handle);
 
     setLoading(true);
     try {
-      const cred = await signup(email, password);
+      // 1) Crear usuario en Firebase Auth
+      await signup(
+        email,
+        password,
+        displayName.trim(),
+        handle.trim()
+      );
       const user = cred.user;
 
+      // 2) Actualizar el perfil de Auth (para currentUser.displayName)
+      await updateProfile(user, {
+        displayName: displayName.trim(),
+      });
+
+      // 3) Crear documento en Firestore /users/{uid}
       await setDoc(doc(db, "users", user.uid), {
-        displayName: displayName || "User",
-        handle: handle.toLowerCase(),
+        uid: user.uid,
+        displayName: displayName.trim(),
+        handle: cleanHandle,            
         email: user.email,
+        bio: "",
+        avatarUrl: "",
         createdAt: serverTimestamp(),
       });
 
@@ -64,7 +97,7 @@ export default function Signup() {
         <form onSubmit={handleSubmit} className="auth-form">
           <input
             type="text"
-            placeholder="Display name"
+            placeholder="Your display name"
             className="field"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -72,7 +105,7 @@ export default function Signup() {
 
           <input
             type="text"
-            placeholder="Handle (username)"
+            placeholder="Your handle (username)"
             className="field"
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
@@ -121,6 +154,6 @@ export default function Signup() {
           </Link>
         </p>
       </div>
-    </div>
-  );
+    </div>
+  );
 }

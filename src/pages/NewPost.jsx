@@ -1,5 +1,6 @@
+// src/pages/NewPost.jsx
 import { useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
@@ -11,8 +12,8 @@ export default function NewPost() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  async function handleSubmit(e) {
+    e.preventDefault();
     setError("");
 
     if (!currentUser) {
@@ -26,24 +27,37 @@ export default function NewPost() {
 
     setSending(true);
     try {
-      let imageUrl = null;
+      // 1) Leer perfil del usuario
+      const userRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userRef);
 
+      if (!userSnap.exists()) {
+        throw new Error("User profile not found");
+      }
+
+      const profile = userSnap.data(); // { displayName, handle, ... }
+      const authorDisplayName = profile.displayName || "Unknown user";
+      const authorHandle = (profile.handle || "").replace(/^@/, "");
+
+      // 2) Subir imagen (si hay)
+      let imageUrl = null;
       if (file) {
         const fileName = Date.now() + "-" + file.name;
         const imageRef = ref(
           storage,
-          "posts/" + currentUser.uid + "/" + fileName
+          `posts/${currentUser.uid}/${fileName}`
         );
         await uploadBytes(imageRef, file);
         imageUrl = await getDownloadURL(imageRef);
       }
 
+      // 3) Crear post
       await addDoc(collection(db, "posts"), {
-        text: text,
-        imageUrl: imageUrl,
-        userId: currentUser.uid,
-        displayName: currentUser.displayName || "User",
-        handle: currentUser.email.split("@")[0],
+        text: text.trim(),
+        imageUrl,
+        authorId: currentUser.uid,
+        authorDisplayName,
+        authorHandle,
         likes: 0,
         createdAt: serverTimestamp(),
       });
@@ -128,6 +142,6 @@ export default function NewPost() {
           </div>
         </form>
       </div>
-    </>
-  );
+    </>
+  );
 }
