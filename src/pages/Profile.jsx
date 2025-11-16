@@ -1,219 +1,139 @@
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import {
   doc,
   getDoc,
+  updateDoc,
   collection,
   query,
   where,
   onSnapshot,
-  updateDoc,
 } from "firebase/firestore";
 import { useAuth } from "../contexts/AuthContext";
-import FollowButton from "../components/FollowButton";
-import PostCard from "../components/PostCard";
 
 export default function Profile() {
   const { uid } = useParams();
   const { currentUser } = useAuth();
 
-  const [user, setUser] = useState(null);
-  const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
+  const [userData, setUserData] = useState(null);
   const [posts, setPosts] = useState([]);
 
-  const [editing, setEditing] = useState(false);
-  const [displayNameInput, setDisplayNameInput] = useState("");
-  const [handleInput, setHandleInput] = useState("");
-  const [bioInput, setBioInput] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
+  // Editable fields
+  const [displayName, setDisplayName] = useState("");
+  const [handle, setHandle] = useState("");
+  const [bio, setBio] = useState("");
 
-  const isOwnProfile = currentUser && currentUser.uid === uid;
-
+  // Load profile + posts
   useEffect(() => {
+    if (!uid) return;
+
+    // ----- LOAD USER PROFILE -----
     const userRef = doc(db, "users", uid);
+
     getDoc(userRef).then((snap) => {
-      const data = snap.data();
-      setUser(data);
-      if (data) {
-        setDisplayNameInput(data.displayName || "");
-        setHandleInput(data.handle || "");
-        setBioInput(data.bio || "");
+      if (snap.exists()) {
+        const data = snap.data();
+        setUserData(data);
+
+        setDisplayName(data.displayName || "");
+        setHandle(data.handle || "");
+        setBio(data.bio || "");
+      } else {
+        // Prevent infinite "Loading..."
+        setUserData({
+          displayName: "Unknown user",
+          handle: "",
+          bio: "",
+        });
       }
     });
 
-    const qFollowers = query(
-      collection(db, "follows"),
-      where("targetUid", "==", uid)
-    );
-    const unsubFollowers = onSnapshot(qFollowers, (snap) => {
-      setFollowers(snap.docs.map((d) => d.id));
+    // ----- LOAD USER POSTS -----
+    const postsQuery = query(collection(db, "posts"), where("userId", "==", uid));
+
+    const unsub = onSnapshot(postsQuery, (snap) => {
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setPosts(list);
     });
 
-    const qFollowing = query(
-      collection(db, "follows"),
-      where("followerUid", "==", uid)
-    );
-    const unsubFollowing = onSnapshot(qFollowing, (snap) => {
-      setFollowing(snap.docs.map((d) => d.id));
-    });
-
-    const qPosts = query(
-      collection(db, "posts"),
-      where("userId", "==", uid)
-    );
-    const unsubPosts = onSnapshot(qPosts, (snap) => {
-      setPosts(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
-
-    return () => {
-      unsubFollowers();
-      unsubFollowing();
-      unsubPosts();
-    };
+    return () => unsub();
   }, [uid]);
 
-  async function handleSaveProfile(e) {
-    e.preventDefault();
-    if (!isOwnProfile) return;
+  // Save profile changes
+  async function saveProfile() {
+    if (!currentUser || currentUser.uid !== uid) return;
 
-    setSaving(true);
-    setSaveError("");
+    const ref = doc(db, "users", uid);
+    await updateDoc(ref, {
+      displayName,
+      handle,
+      bio,
+    });
 
-    try {
-      const userRef = doc(db, "users", uid);
-      await updateDoc(userRef, {
-        displayName: displayNameInput || "User",
-        handle: handleInput.toLowerCase(),
-        bio: bioInput,
-      });
-
-      setUser((prev) =>
-        prev
-          ? {
-              ...prev,
-              displayName: displayNameInput || "User",
-              handle: handleInput.toLowerCase(),
-              bio: bioInput,
-            }
-          : prev
-      );
-
-      setEditing(false);
-    } catch (err) {
-      console.error(err);
-      setSaveError("Could not save profile. Try again.");
-    } finally {
-      setSaving(false);
-    }
+    alert("Profile updated!");
   }
 
-  if (!user) {
-    return null;
+  // Loading state
+  if (!userData) {
+    return (
+      <div className="page">
+        <h2>Loading profile...</h2>
+      </div>
+    );
   }
 
   return (
-    <>
-      <div className="page-header">
-        <h1 className="page-header-title">
-          {user.displayName || "Profile"}
-        </h1>
+    <div className="page">
+      <h1>Profile</h1>
+
+      {/* ----- PROFILE INFO ----- */}
+      <div className="profile-box">
+        <h2>{userData.displayName}</h2>
+        <p>@{userData.handle}</p>
+        <p>{userData.bio}</p>
       </div>
 
-      <div className="profile-wrapper">
-        <div className="profile-main">
-          <div className="profile-avatar-large">
-            {(user.displayName && user.displayName[0].toUpperCase()) || "U"}
+      {/* ----- EDIT PROFILE (only yourself) ----- */}
+      {currentUser && currentUser.uid === uid && (
+        <div className="profile-edit-box">
+          <h3>Edit Profile</h3>
+
+          <input
+            type="text"
+            placeholder="Display name"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+
+          <input
+            type="text"
+            placeholder="Handle"
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+          />
+
+          <textarea
+            placeholder="Bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+          />
+
+          <button onClick={saveProfile}>Save</button>
+        </div>
+      )}
+
+      {/* ----- USER POSTS ----- */}
+      <h2 style={{ marginTop: "40px" }}>Posts</h2>
+      {posts.length === 0 && <p>No posts yet.</p>}
+
+      <div className="posts-list">
+        {posts.map((post) => (
+          <div key={post.id} className="post-box">
+            <p>{post.text}</p>
           </div>
-
-          {isOwnProfile ? (
-            <button
-              type="button"
-              className="btn btn-outline btn-small"
-              onClick={() => setEditing((v) => !v)}
-            >
-              {editing ? "Cancel" : "Edit profile"}
-            </button>
-          ) : (
-            <FollowButton targetUid={uid} />
-          )}
-        </div>
-
-        <div className="profile-stats">
-          <span>{followers.length} Followers</span>
-          <span>{following.length} Following</span>
-        </div>
-
-        {user.bio && !editing && (
-          <p
-            style={{
-              marginTop: "8px",
-              fontSize: "14px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {user.bio}
-          </p>
-        )}
-
-        {editing && (
-          <form
-            onSubmit={handleSaveProfile}
-            style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}
-          >
-            {saveError && (
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "#fecaca",
-                }}
-              >
-                {saveError}
-              </div>
-            )}
-
-            <input
-              className="field"
-              placeholder="Display name"
-              value={displayNameInput}
-              onChange={(e) => setDisplayNameInput(e.target.value)}
-            />
-
-            <input
-              className="field"
-              placeholder="Handle (username)"
-              value={handleInput}
-              onChange={(e) => setHandleInput(e.target.value)}
-            />
-
-            <textarea
-              className="field"
-              style={{ minHeight: "70px", resize: "vertical" }}
-              placeholder="Bio"
-              value={bioInput}
-              onChange={(e) => setBioInput(e.target.value)}
-            />
-
-            <div style={{ marginTop: "4px" }}>
-              <button
-                type="submit"
-                className="btn btn-primary btn-small"
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      <div className="feed-list">
-        {posts.map((p) => (
-          <PostCard key={p.id} post={p} />
         ))}
       </div>
-    </>
+    </div>
   );
 }

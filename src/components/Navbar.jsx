@@ -15,14 +15,13 @@ export default function Navbar() {
           <Link to="/" className="navbar-link">
             Home
           </Link>
+
           <Link to="/new" className="navbar-link">
             Post
           </Link>
+
           <Link to="/search" className="navbar-link">
             Search
-          </Link>
-          <Link to="/profile/me" className="navbar-link">
-            Profile
           </Link>
         </div>
       </nav>
