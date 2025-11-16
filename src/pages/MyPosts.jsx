@@ -1,4 +1,3 @@
-// src/pages/MyPosts.jsx
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { db } from "../firebase";
@@ -11,39 +10,27 @@ export default function MyPosts() {
 
   useEffect(() => {
     if (!currentUser) return;
-
     const q = query(
       collection(db, "posts"),
-      where("authorId", "==", currentUser.uid),
+      where("userId", "==", currentUser.uid),
       orderBy("createdAt", "desc")
     );
-
-    const unsub = onSnapshot(q, (snap) => {
-      const list = [];
-      snap.forEach((doc) => list.push({ id: doc.id, ...doc.data() }));
-      setPosts(list);
-    });
-
+    const unsub = onSnapshot(q, (snap) =>
+      setPosts(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    );
     return unsub;
   }, [currentUser]);
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-slate-100">
-        My posts
-      </h1>
-
-      {posts.length === 0 ? (
-        <div className="text-sm text-slate-400">
-          You haven't posted anything yet.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    <>
+      <div className="page-header">
+        <h1 className="page-header-title">My Posts</h1>
+      </div>
+      <div className="feed-list">
+        {posts.map((p) => (
+          <PostCard key={p.id} post={p} />
+        ))}
+      </div>
+    </>
+  );
 }

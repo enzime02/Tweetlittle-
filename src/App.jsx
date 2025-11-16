@@ -1,6 +1,7 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -9,6 +10,7 @@ import NewPost from "./pages/NewPost";
 import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import MyPosts from "./pages/MyPosts";
+
 import "./App.css";
 
 function PrivateRoute({ children }) {
@@ -16,8 +18,8 @@ function PrivateRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-950 text-slate-100">
-        Loading...
+      <div className="auth-page">
+        <div className="auth-card">Loading...</div>
       </div>
     );
   }
@@ -33,11 +35,9 @@ function AppRoutes() {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
-    // El loader global ya se maneja en PrivateRoute,
-    // pero esto cubre las rutas públicas
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-950 text-slate-100">
-        Loading...
+      <div className="auth-page">
+        <div className="auth-card">Loading...</div>
       </div>
     );
   }
@@ -93,7 +93,6 @@ function AppRoutes() {
         path="/signup"
         element={currentUser ? <Navigate to="/" replace /> : <Signup />}
       />
-
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -103,13 +102,15 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-          <Navbar />
-          <main className="max-w-4xl mx-auto px-4 pt-20 pb-10">
-            <AppRoutes />
-          </main>
+        <div className="app-root">
+          <div className="app-column">
+            <Navbar />
+            <main className="app-main">
+              <AppRoutes />
+            </main>
+          </div>
         </div>
       </BrowserRouter>
     </AuthProvider>
-  );
+  );
 }

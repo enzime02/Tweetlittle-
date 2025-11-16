@@ -1,6 +1,7 @@
-/* ===========================
-   RESET BÁSICO
-   =========================== */
+:root {
+  color-scheme: dark;
+}
+
 *,
 *::before,
 *::after {
@@ -10,467 +11,531 @@
 html,
 body,
 #root {
+  margin: 0;
+  padding: 0;
   height: 100%;
 }
 
 body {
-  margin: 0;
-  background-color: #020617; /* similar a bg-slate-950 */
-  color: #e2e8f0;            /* similar a text-slate-200 */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  background-color: #020617; /* near-black */
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
-/* Quitar subrayado por defecto */
 a {
-  color: inherit;
   text-decoration: none;
+  color: inherit;
 }
 
-/* ===========================
-   LAYOUT GENERAL
-   =========================== */
+button {
+  font-family: inherit;
+}
+
+/* Layout */
 
 .app-root {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #0f172a 0, #020617 60%);
-  color: #e2e8f0;
-}
-
-/* Contenedor centrado para páginas (Login, Signup, etc.) */
-.page-center {
-  min-height: calc(100vh - 64px); /* resta la navbar aprox */
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  background-color: #020617;
 }
 
-/* Contenedor de página estándar (Home, Profile, etc.) */
-.page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+.app-column {
+  width: 100%;
+  max-width: 720px;
+  border-left: 1px solid #1f2937;
+  border-right: 1px solid #1f2937;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Títulos de página */
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
+.app-main {
+  padding-bottom: 40px;
 }
 
-.page-subtitle {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  margin-bottom: 1.5rem;
-}
-
-/* ===========================
-   NAVBAR
-   =========================== */
+/* Navbar */
 
 .navbar {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  border-bottom: 1px solid #1f2937;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
   z-index: 20;
+  background: rgba(3, 7, 18, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #1f2937;
 }
 
-.navbar-left,
-.navbar-right {
+.navbar-inner {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 16px;
 }
 
-.navbar-brand {
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-logo-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #0ea5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: 0.04em;
+  color: white;
+  font-size: 18px;
+}
+
+.navbar-logo-text {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .navbar-link {
-  font-size: 0.95rem;
-  padding: 0.25rem 0.5rem;
+  padding: 6px 12px;
   border-radius: 999px;
+  font-size: 13px;
   color: #cbd5f5;
-  transition: background-color 0.15s, color 0.15s;
+  cursor: pointer;
 }
 
 .navbar-link:hover {
-  background-color: #111827;
-  color: #ffffff;
+  background-color: #0b1120;
+  color: #f9fafb;
 }
 
-.navbar-link--active {
-  background-color: #0ea5e9;
-  color: #0b1120;
+.navbar-link-active {
+  background-color: #020617;
+  color: #38bdf8;
 }
 
-/* Usuario / logout */
-.navbar-user {
+.navbar-auth-buttons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  gap: 8px;
 }
 
-.navbar-user-email {
-  color: #9ca3af;
-}
-
-/* ===========================
-   CARDS GENERALES
-   =========================== */
-
-.card {
-  background-color: #020617;
-  border-radius: 1rem;
-  border: 1px solid #1e293b;
-  padding: 1.5rem;
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.7);
-}
-
-.card-narrow {
-  width: 100%;
-  max-width: 420px;
-}
-
-/* ===========================
-   FORMULARIOS
-   =========================== */
-
-.form-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.form-subtitle {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  margin-bottom: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-label {
-  display: block;
-  font-size: 0.85rem;
-  margin-bottom: 0.35rem;
-  color: #e5e7eb;
-}
-
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 0.7rem 0.8rem;
-  border-radius: 0.6rem;
-  border: 1px solid #1f2937;
-  background-color: #020617;
-  color: #e5e7eb;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-  color: #6b7280;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 1px #0ea5e9;
-  background-color: #020617;
-}
-
-.form-textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.form-error {
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
-  color: #fb7185; /* rojo suave */
-}
-
-/* ===========================
-   BOTONES
-   =========================== */
+/* Buttons */
 
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
   border: none;
   cursor: pointer;
-  padding: 0.6rem 1.3rem;
-  transition: background-color 0.15s, transform 0.08s, box-shadow 0.15s;
+  font-size: 13px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s;
 }
 
 .btn-primary {
-  background: linear-gradient(to right, #0ea5e9, #22c55e);
-  color: #0b1120;
-  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.35);
+  background-color: #0ea5e9;
+  color: #020617;
+  font-weight: 600;
 }
 
 .btn-primary:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
+  background-color: #38bdf8;
 }
 
-.btn-primary:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-.btn-ghost {
+.btn-outline {
   background-color: transparent;
   color: #e5e7eb;
-  border: 1px solid #1f2937;
+  border: 1px solid #4b5563;
 }
 
-.btn-ghost:hover {
-  background-color: #111827;
+.btn-outline:hover {
+  background-color: #020617;
 }
 
-.btn-sm {
-  padding: 0.35rem 0.9rem;
-  font-size: 0.8rem;
+.btn-small {
+  font-size: 12px;
+  padding: 4px 10px;
 }
 
 .btn-full {
   width: 100%;
 }
 
-/* Botón “iconito” para like / comment, etc. */
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  color: #9ca3af;
-  font-size: 0.8rem;
+/* Page headers */
+
+.page-header {
+  position: sticky;
+  top: 56px;
+  z-index: 10;
+  background: rgba(3, 7, 18, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #1f2937;
+  padding: 10px 16px;
 }
 
-.btn-icon:hover {
-  background-color: #020617;
-  color: #e5e7eb;
+.page-header-title {
+  font-size: 20px;
+  font-weight: 600;
 }
 
-/* ===========================
-   LINKS DE TEXTO
-   =========================== */
+/* Feed / lists */
 
-.text-link {
-  color: #38bdf8;
-  font-size: 0.85rem;
-}
-
-.text-link:hover {
-  text-decoration: underline;
-}
-
-/* ===========================
-   HOME / FEED / POSTS
-   =========================== */
-
-.feed {
+.feed-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
-.feed-empty {
-  margin-top: 2rem;
-  text-align: center;
-  color: #64748b;
-  font-size: 0.9rem;
+/* NewPost */
+
+.newpost-wrapper {
+  padding: 16px;
+  border-bottom: 1px solid #1f2937;
 }
 
-/* Tarjeta de post */
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background-color: #020617;
+  color: #e5e7eb;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #0ea5e9;
+}
+
+.file-input {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Post card */
+
 .post-card {
-  background-color: #020617;
-  border-radius: 1rem;
-  border: 1px solid #1e293b;
-  padding: 1rem 1.25rem;
-  transition: background-color 0.12s, border-color 0.12s;
+  border-bottom: 1px solid #1f2937;
+  padding: 12px 16px;
 }
 
-.post-card:hover {
-  background-color: #020617;
-  border-color: #334155;
+.post-wrapper {
+  display: flex;
+  gap: 12px;
+}
+
+.post-avatar {
+  flex-shrink: 0;
+}
+
+.post-avatar-initial {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background-color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.post-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .post-header {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
 }
 
-.post-author {
-  font-size: 0.92rem;
+.post-name {
   font-weight: 600;
 }
 
-.post-meta {
-  font-size: 0.78rem;
-  color: #64748b;
+.post-handle,
+.post-timestamp {
+  color: #9ca3af;
+  font-size: 12px;
 }
 
-.post-content {
-  font-size: 0.95rem;
-  margin: 0.4rem 0 0.6rem;
+.post-dot {
+  color: #4b5563;
+  font-size: 12px;
+}
+
+.post-badge {
+  margin-left: 6px;
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  padding: 1px 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.post-text {
+  margin-top: 4px;
+  font-size: 14px;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.post-footer {
+.post-image {
+  margin-top: 8px;
+  border-radius: 14px;
+  border: 1px solid #1f2937;
+  width: 100%;
+  max-height: 512px;
+  object-fit: cover;
+}
+
+.post-actions {
+  margin-top: 8px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.4rem;
+  gap: 16px;
+  font-size: 12px;
+  color: #9ca3af;
 }
 
-/* ===========================
-   PROFILE
-   =========================== */
+.btn-like {
+  background: transparent;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
 
-.profile-header {
+.btn-like:hover {
+  background-color: #020617;
+  color: #38bdf8;
+}
+
+/* Profile */
+
+.profile-wrapper {
+  padding: 16px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.profile-main {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
-.profile-avatar {
+.profile-avatar-large {
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #0ea5e9, #22c55e);
+  background-color: #374151;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  color: #0b1120;
-  font-size: 1.1rem;
-}
-
-.profile-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.profile-username {
-  font-size: 0.85rem;
-  color: #9ca3af;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .profile-stats {
   display: flex;
-  gap: 1rem;
-  margin-top: 0.4rem;
-  font-size: 0.85rem;
-  color: #94a3b8;
+  gap: 16px;
+  font-size: 13px;
+  color: #9ca3af;
 }
 
-/* ===========================
-   SEARCH / LISTAS DE USUARIOS
-   =========================== */
+/* Search */
 
-.search-bar {
-  margin-bottom: 1rem;
+.search-wrapper {
+  padding: 16px;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.6rem 0.9rem;
   border-radius: 999px;
   border: 1px solid #1f2937;
   background-color: #020617;
   color: #e5e7eb;
-  font-size: 0.9rem;
-}
-
-.search-input::placeholder {
-  color: #6b7280;
+  padding: 8px 14px;
+  font-size: 14px;
 }
 
 .search-input:focus {
   outline: none;
   border-color: #0ea5e9;
-  box-shadow: 0 0 0 1px #0ea5e9;
 }
 
-.user-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #111827;
-}
-
-.user-row:last-child {
-  border-bottom: none;
-}
-
-.user-main {
+.search-results {
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.user-email {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-/* Botón “Follow / Unfollow” reutiliza .btn-sm */
-.btn-following {
-  background-color: #020617;
-  border: 1px solid #22c55e;
-  color: #bbf7d0;
-}
-
-.btn-following:hover {
-  background-color: #022c22;
-}
-
-/* ===========================
-   PEQUEÑOS DETALLES
-   =========================== */
-
-.badge {
-  display: inline-flex;
+.search-user-row {
+  display: flex;
   align-items: center;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  background-color: #0f172a;
-  color: #e5e7eb;
-  border: 1px solid #1f2937;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  cursor: pointer;
 }
 
-.badge-pill {
+.search-user-row:hover {
+  background-color: #020617;
+}
+
+.search-user-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.search-user-handle {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Auth pages */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #020617;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid #1f2937;
+  background-color: #020617;
+}
+
+.auth-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.auth-logo {
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
+  background-color: #0ea5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #020617;
+  font-weight: 700;
+}
+
+.auth-title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.auth-error {
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(248, 113, 113, 0.6);
+  background-color: rgba(127, 29, 29, 0.25);
+  font-size: 13px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #1f2937;
+  background-color: #020617;
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+.field:focus {
+  outline: none;
+  border-color: #0ea5e9;
+}
+
+.auth-footer {
+  margin-top: 14px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* Follow button */
+
+.btn-follow {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-follow-primary {
+  background-color: #e5e7eb;
+  color: #020617;
+}
+
+.btn-follow-primary:hover {
+  background-color: #ffffff;
+}
+
+.btn-follow-outline {
+  background-color: transparent;
+  color: #e5e7eb;
+  border: 1px solid #4b5563;
+}
+
+.btn-follow-outline:hover {
+  background-color: #020617;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;
 }

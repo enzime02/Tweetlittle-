@@ -1,16 +1,15 @@
-// src/pages/Profile.jsx
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { db } from "../firebase";
 import {
-  collection,
-  getDocs,
   doc,
   getDoc,
-  orderBy,
+  collection,
   query,
   where,
+  onSnapshot,
+  updateDoc,
 } from "firebase/firestore";
-import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import FollowButton from "../components/FollowButton";
 import PostCard from "../components/PostCard";
@@ -18,78 +17,203 @@ import PostCard from "../components/PostCard";
 export default function Profile() {
   const { uid } = useParams();
   const { currentUser } = useAuth();
+
   const [user, setUser] = useState(null);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [posts, setPosts] = useState([]);
 
+  const [editing, setEditing] = useState(false);
+  const [displayNameInput, setDisplayNameInput] = useState("");
+  const [handleInput, setHandleInput] = useState("");
+  const [bioInput, setBioInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const isOwnProfile = currentUser && currentUser.uid === uid;
+
   useEffect(() => {
-    async function loadUser() {
-      const ref = doc(db, "users", uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        setUser({ id: snap.id, ...snap.data() });
-      } else {
-        setUser(null);
+    const userRef = doc(db, "users", uid);
+    getDoc(userRef).then((snap) => {
+      const data = snap.data();
+      setUser(data);
+      if (data) {
+        setDisplayNameInput(data.displayName || "");
+        setHandleInput(data.handle || "");
+        setBioInput(data.bio || "");
       }
-    }
+    });
 
-    async function loadPosts() {
-      const q = query(
-        collection(db, "posts"),
-        where("authorId", "==", uid),
-        orderBy("createdAt", "desc")
-      );
-      const snap = await getDocs(q);
-      const list = [];
-      snap.forEach((doc) => list.push({ id: doc.id, ...doc.data() }));
-      setPosts(list);
-    }
+    const qFollowers = query(
+      collection(db, "follows"),
+      where("targetUid", "==", uid)
+    );
+    const unsubFollowers = onSnapshot(qFollowers, (snap) => {
+      setFollowers(snap.docs.map((d) => d.id));
+    });
 
-    loadUser();
-    loadPosts();
+    const qFollowing = query(
+      collection(db, "follows"),
+      where("followerUid", "==", uid)
+    );
+    const unsubFollowing = onSnapshot(qFollowing, (snap) => {
+      setFollowing(snap.docs.map((d) => d.id));
+    });
+
+    const qPosts = query(
+      collection(db, "posts"),
+      where("userId", "==", uid)
+    );
+    const unsubPosts = onSnapshot(qPosts, (snap) => {
+      setPosts(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+
+    return () => {
+      unsubFollowers();
+      unsubFollowing();
+      unsubPosts();
+    };
   }, [uid]);
 
+  async function handleSaveProfile(e) {
+    e.preventDefault();
+    if (!isOwnProfile) return;
+
+    setSaving(true);
+    setSaveError("");
+
+    try {
+      const userRef = doc(db, "users", uid);
+      await updateDoc(userRef, {
+        displayName: displayNameInput || "User",
+        handle: handleInput.toLowerCase(),
+        bio: bioInput,
+      });
+
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              displayName: displayNameInput || "User",
+              handle: handleInput.toLowerCase(),
+              bio: bioInput,
+            }
+          : prev
+      );
+
+      setEditing(false);
+    } catch (err) {
+      console.error(err);
+      setSaveError("Could not save profile. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (!user) {
-    return (
-      <div className="text-sm text-slate-400">
-        User not found.
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
-        <div className="w-14 h-14 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400 text-xl font-semibold">
-          {user.displayName?.[0]?.toUpperCase() ?? "U"}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-lg font-semibold text-slate-100">
-                {user.displayName}
-              </div>
-              <div className="text-xs text-slate-400">{user.handle}</div>
-            </div>
-            <FollowButton targetUid={uid} />
-          </div>
-          {user.bio && (
-            <p className="mt-2 text-sm text-slate-200">{user.bio}</p>
-          )}
-        </div>
+    <>
+      <div className="page-header">
+        <h1 className="page-header-title">
+          {user.displayName || "Profile"}
+        </h1>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-slate-200">
-          Posts
-        </h2>
-        {posts.length === 0 ? (
-          <div className="text-xs text-slate-400">
-            This user hasn't posted anything yet.
+      <div className="profile-wrapper">
+        <div className="profile-main">
+          <div className="profile-avatar-large">
+            {(user.displayName && user.displayName[0].toUpperCase()) || "U"}
           </div>
-        ) : (
-          posts.map((post) => <PostCard key={post.id} post={post} />)
+
+          {isOwnProfile ? (
+            <button
+              type="button"
+              className="btn btn-outline btn-small"
+              onClick={() => setEditing((v) => !v)}
+            >
+              {editing ? "Cancel" : "Edit profile"}
+            </button>
+          ) : (
+            <FollowButton targetUid={uid} />
+          )}
+        </div>
+
+        <div className="profile-stats">
+          <span>{followers.length} Followers</span>
+          <span>{following.length} Following</span>
+        </div>
+
+        {user.bio && !editing && (
+          <p
+            style={{
+              marginTop: "8px",
+              fontSize: "14px",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {user.bio}
+          </p>
+        )}
+
+        {editing && (
+          <form
+            onSubmit={handleSaveProfile}
+            style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}
+          >
+            {saveError && (
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#fecaca",
+                }}
+              >
+                {saveError}
+              </div>
+            )}
+
+            <input
+              className="field"
+              placeholder="Display name"
+              value={displayNameInput}
+              onChange={(e) => setDisplayNameInput(e.target.value)}
+            />
+
+            <input
+              className="field"
+              placeholder="Handle (username)"
+              value={handleInput}
+              onChange={(e) => setHandleInput(e.target.value)}
+            />
+
+            <textarea
+              className="field"
+              style={{ minHeight: "70px", resize: "vertical" }}
+              placeholder="Bio"
+              value={bioInput}
+              onChange={(e) => setBioInput(e.target.value)}
+            />
+
+            <div style={{ marginTop: "4px" }}>
+              <button
+                type="submit"
+                className="btn btn-primary btn-small"
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </form>
         )}
       </div>
-    </div>
-  );
+
+      <div className="feed-list">
+        {posts.map((p) => (
+          <PostCard key={p.id} post={p} />
+        ))}
+      </div>
+    </>
+  );
 }

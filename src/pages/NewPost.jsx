@@ -1,120 +1,133 @@
-// src/pages/NewPost.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { collection, addDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage, timestamp } from "../firebase";
+import { db, storage } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function NewPost() {
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
-
   const [text, setText] = useState("");
-  const [imageFile, setImageFile] = useState(null);
-  const [busy, setBusy] = useState(false);
+  const [file, setFile] = useState(null);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!currentUser) return;
-    if (!text.trim() && !imageFile) return;
-
-    setBusy(true);
+  async function handleSubmit(event) {
+    event.preventDefault();
     setError("");
 
-    try {
-      let imageUrl = "";
+    if (!currentUser) {
+      setError("You must be logged in.");
+      return;
+    }
+    if (!text.trim() && !file) {
+      setError("Write something or attach an image.");
+      return;
+    }
 
-      if (imageFile) {
-        const storageRef = ref(
+    setSending(true);
+    try {
+      let imageUrl = null;
+
+      if (file) {
+        const fileName = Date.now() + "-" + file.name;
+        const imageRef = ref(
           storage,
-          `posts/${currentUser.uid}/${Date.now()}_${imageFile.name}`
+          "posts/" + currentUser.uid + "/" + fileName
         );
-        await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(storageRef);
+        await uploadBytes(imageRef, file);
+        imageUrl = await getDownloadURL(imageRef);
       }
 
       await addDoc(collection(db, "posts"), {
-        text: text.trim(),
-        imageUrl,
-        authorId: currentUser.uid,
-        authorDisplayName:
-          currentUser.displayName ||
-          currentUser.email?.split("@")[0] ||
-          "User",
-        authorHandle:
-          "@" +
-          (currentUser.displayName ||
-            currentUser.email?.split("@")[0] ||
-            "user"
-          ).toLowerCase(),
-        createdAt: timestamp(),
+        text: text,
+        imageUrl: imageUrl,
+        userId: currentUser.uid,
+        displayName: currentUser.displayName || "User",
+        handle: currentUser.email.split("@")[0],
         likes: 0,
+        createdAt: serverTimestamp(),
       });
 
       setText("");
-      setImageFile(null);
-      navigate("/");
+      setFile(null);
     } catch (err) {
       console.error(err);
-      setError("Could not create post.");
+      setError("Could not post. Try again.");
     } finally {
-      setBusy(false);
+      setSending(false);
     }
   }
 
   return (
-    <div className="max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-5 text-sm">
-      <h1 className="text-lg font-semibold text-slate-100 mb-3">
-        Create a new post
-      </h1>
+    <>
+      <div className="page-header">
+        <h1 className="page-header-title">New Post</h1>
+      </div>
 
-      {error && (
-        <div className="mb-3 text-xs text-red-400 bg-red-950/40 border border-red-800 rounded p-2">
-          {error}
-        </div>
-      )}
+      <div className="newpost-wrapper">
+        <form onSubmit={handleSubmit}>
+          {error && (
+            <div
+              style={{
+                marginBottom: "8px",
+                fontSize: "13px",
+                color: "#fecaca",
+              }}
+            >
+              {error}
+            </div>
+          )}
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "6px",
+              fontSize: "13px",
+              color: "#9ca3af",
+            }}
+          >
+            Text
+          </label>
           <textarea
-            className="w-full min-h-[120px] rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="textarea"
             placeholder="What's happening?"
-            maxLength={280}
             value={text}
             onChange={(e) => setText(e.target.value)}
+            maxLength={280}
           />
-          <div className="mt-1 text-[11px] text-slate-500 text-right">
-            {text.length}/280
-          </div>
-        </div>
 
-        <div>
-          <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-            <span className="px-2 py-1 rounded-full bg-slate-800 border border-slate-700">
-              Upload image
-            </span>
-            <span className="text-slate-500">
-              {imageFile?.name ?? "Optional"}
-            </span>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            />
+          <label
+            style={{
+              display: "block",
+              marginTop: "10px",
+              marginBottom: "6px",
+              fontSize: "13px",
+              color: "#9ca3af",
+            }}
+          >
+            Image (optional)
           </label>
-        </div>
+          <input
+            type="file"
+            accept="image/*"
+            className="file-input"
+            onChange={(e) => {
+              const f = e.target.files && e.target.files[0];
+              setFile(f || null);
+            }}
+          />
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="rounded-full bg-sky-500 hover:bg-sky-400 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-        >
-          {busy ? "Posting..." : "Post"}
-        </button>
-      </form>
-    </div>
-  );
+          <div style={{ marginTop: "14px" }}>
+            <button
+              type="submit"
+              className="btn btn-primary btn-small"
+              disabled={sending}
+            >
+              {sending ? "Posting..." : "Post"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
 }

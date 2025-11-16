@@ -1,30 +1,40 @@
-// src/components/FollowButton.jsx
 import { useEffect, useState } from "react";
-import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
-import { db, timestamp } from "../firebase";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function FollowButton({ targetUid }) {
   const { currentUser } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!currentUser || !targetUid || currentUser.uid === targetUid) return;
+    if (!currentUser || !targetUid) {
+      return;
+    }
 
-    const ref = doc(db, "follows", `${currentUser.uid}_${targetUid}`);
-    getDoc(ref)
-      .then((snap) => {
-        setIsFollowing(snap.exists());
-      })
-      .catch((err) => console.error("Follow check error", err));
+    const id = currentUser.uid + "_" + targetUid;
+    const ref = doc(db, "follows", id);
+
+    getDoc(ref).then((snap) => {
+      setIsFollowing(snap.exists());
+    });
   }, [currentUser, targetUid]);
 
-  if (!currentUser || currentUser.uid === targetUid) return null;
-
   async function toggleFollow() {
-    setBusy(true);
-    const ref = doc(db, "follows", `${currentUser.uid}_${targetUid}`);
+    if (!currentUser || currentUser.uid === targetUid || loading) {
+      return;
+    }
+
+    setLoading(true);
+    const id = currentUser.uid + "_" + targetUid;
+    const ref = doc(db, "follows", id);
 
     try {
       if (isFollowing) {
@@ -32,30 +42,27 @@ export default function FollowButton({ targetUid }) {
         setIsFollowing(false);
       } else {
         await setDoc(ref, {
-          followerId: currentUser.uid,
-          followingId: targetUid,
-          createdAt: timestamp(),
+          followerUid: currentUser.uid,
+          targetUid: targetUid,
+          createdAt: serverTimestamp(),
         });
         setIsFollowing(true);
       }
-    } catch (err) {
-      console.error("Toggle follow error", err);
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   }
 
+  if (!currentUser || currentUser.uid === targetUid) {
+    return null;
+  }
+
+  const btnClass =
+    "btn-follow " + (isFollowing ? "btn-follow-outline" : "btn-follow-primary");
+
   return (
-    <button
-      onClick={toggleFollow}
-      disabled={busy}
-      className={`px-3 py-1 rounded-full text-xs border ${
-        isFollowing
-          ? "bg-slate-800 border-slate-700 text-slate-100"
-          : "bg-sky-500 border-sky-500 text-white"
-      }`}
-    >
+    <button type="button" onClick={toggleFollow} disabled={loading} className={btnClass}>
       {isFollowing ? "Following" : "Follow"}
     </button>
-  );
+  );
 }

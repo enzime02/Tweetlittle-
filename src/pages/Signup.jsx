@@ -1,95 +1,126 @@
-// src/pages/Signup.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { db } from "../firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Signup() {
   const { signup } = useAuth();
   const navigate = useNavigate();
+
   const [displayName, setDisplayName] = useState("");
+  const [handle, setHandle] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
+    if (password !== passwordConfirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!handle.trim()) {
+      setError("Please choose a handle.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      await signup(email, password, displayName);
+      const cred = await signup(email, password);
+      const user = cred.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        displayName: displayName || "User",
+        handle: handle.toLowerCase(),
+        email: user.email,
+        createdAt: serverTimestamp(),
+      });
+
       navigate("/");
     } catch (err) {
       console.error(err);
-      setError("Could not create account. Check your data.");
+      setError("Failed to create account.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-10 bg-slate-900 border border-slate-800 rounded-2xl p-6 text-sm">
-      <h1 className="text-xl font-semibold mb-4 text-slate-100">
-        Create your account
-      </h1>
-
-      {error && (
-        <div className="mb-3 text-xs text-red-400 bg-red-950/40 border border-red-800 rounded p-2">
-          {error}
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-title-row">
+          <div className="auth-logo">t</div>
+          <h1 className="auth-title">Create your account</h1>
         </div>
-      )}
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div>
-          <label className="block text-xs mb-1 text-slate-300">
-            Display name
-          </label>
+        {error && <div className="auth-error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="auth-form">
           <input
             type="text"
-            className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="Display name"
+            className="field"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            required
           />
-        </div>
 
-        <div>
-          <label className="block text-xs mb-1 text-slate-300">
-            Email
-          </label>
+          <input
+            type="text"
+            placeholder="Handle (username)"
+            className="field"
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+          />
+
           <input
             type="email"
-            className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            required
+            placeholder="Email"
+            className="field"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
-        </div>
 
-        <div>
-          <label className="block text-xs mb-1 text-slate-300">
-            Password
-          </label>
           <input
             type="password"
-            className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            required
+            placeholder="Password"
+            className="field"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
-        </div>
 
-        <button
-          type="submit"
-          className="w-full mt-2 rounded-full bg-sky-500 hover:bg-sky-400 py-2 text-sm font-medium text-white"
-        >
-          Sign up
-        </button>
-      </form>
+          <input
+            type="password"
+            required
+            placeholder="Confirm password"
+            className="field"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+          />
 
-      <p className="mt-4 text-xs text-slate-400">
-        Already have an account?{" "}
-        <Link to="/login" className="text-sky-400 hover:underline">
-          Login
-        </Link>
-      </p>
-    </div>
-  );
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary btn-full"
+          >
+            {loading ? "Creating account..." : "Sign up"}
+          </button>
+        </form>
+
+        <p className="auth-footer">
+          Already have an account?{" "}
+          <Link to="/login" style={{ color: "#38bdf8" }}>
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 }
